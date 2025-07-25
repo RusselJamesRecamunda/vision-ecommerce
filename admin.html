@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Submitted Applications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 p-8">
+
+  <h1 class="text-3xl font-bold mb-8 text-center">Submitted Applications</h1>
+
+  <div id="loading" class="text-center text-gray-600">Loading applications...</div>
+
+  <table id="applications-table" class="min-w-full bg-white shadow-md rounded-lg overflow-hidden hidden">
+    <thead class="bg-indigo-600 text-white">
+      <tr>
+        <th class="py-3 px-4 text-left">Full Name</th>
+        <th class="py-3 px-4 text-left">Email</th>
+        <th class="py-3 px-4 text-left">Phone</th>
+        <th class="py-3 px-4 text-left">Position</th>
+        <th class="py-3 px-4 text-left">Resume</th>
+      </tr>
+    </thead>
+    <tbody id="applications-body"></tbody>
+  </table>
+
+  <div id="no-applications" class="text-center text-gray-600 hidden">No applications found.</div>
+
+  <script>
+    async function fetchApplications() {
+      try {
+        // Adjust URL to your real backend API endpoint for listing applications
+        const res = await fetch('http://localhost:3000/applications');
+        if (!res.ok) throw new Error('Failed to fetch applications');
+
+        const applications = await res.json();
+
+        const table = document.getElementById('applications-table');
+        const tbody = document.getElementById('applications-body');
+        const loading = document.getElementById('loading');
+        const noApps = document.getElementById('no-applications');
+
+        loading.style.display = 'none';
+
+        if (!applications.length) {
+          noApps.style.display = 'block';
+          return;
+        }
+
+        applications.forEach(app => {
+          const tr = document.createElement('tr');
+          tr.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
+
+          tr.innerHTML = `
+            <td class="py-3 px-4">${app['full-name'] || '-'}</td>
+            <td class="py-3 px-4">${app.email || '-'}</td>
+            <td class="py-3 px-4">${app.phone || '-'}</td>
+            <td class="py-3 px-4">${app.position || '-'}</td>
+            <td class="py-3 px-4">
+              ${
+                app.resumeUrl
+                  ? `<a href="${app.resumeUrl}" target="_blank" class="text-indigo-600 hover:underline">Download</a>`
+                  : 'No Resume'
+              }
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        table.classList.remove('hidden');
+      } catch (error) {
+        document.getElementById('loading').textContent = `Error loading applications: ${error.message}`;
+      }
+    }
+
+    fetchApplications();
+  </script>
+
+</body>
+</html>
